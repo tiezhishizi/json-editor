@@ -71,6 +71,9 @@ JSONEditor.AbstractEditor = Class.extend({
     this.updateHeaderText();
     this.register();
     this.onWatchedFieldChange();
+    // dasons: add custom control and make it disable when need
+    this.AppendCustomControl();
+    this.DisableEditorIfCustomControlNeed();
   },
   
   setupWatchListeners: function() {
@@ -425,5 +428,25 @@ JSONEditor.AbstractEditor = Class.extend({
   },
   showValidationErrors: function(errors) {
 
+  },
+  
+  // dason: for customControl adding
+  AppendCustomControl: function () {
+      if (this.options.CustomControlEnable &&
+          this.options.CustomControlType &&
+          JSONEditor.defaults.custom_control_provider) {
+          var customControl = JSONEditor.defaults.custom_control_provider(
+              this.options.CustomControlType, this);
+          if (customControl) {
+              var containerDiv = this.theme.getLinksHolder();
+              containerDiv.appendChild(customControl);
+              this.container.appendChild(containerDiv);
+          }
+      }
+  },
+  DisableEditorIfCustomControlNeed: function () {
+      if (this.options.CustomtrolNeedInputDisable) {
+          this.disable();
+      }
   }
 });

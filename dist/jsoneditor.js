@@ -466,6 +466,22 @@ JSONEditor.prototype = {
     if(!this.editors) return;
     return this.editors[path];
   },
+  // dason: added for custom control
+  getEditorForCustomControl:function(ele){
+      var editNodePathAttribute="data-schemapath";
+      var parent = ele.parentElement;
+      while (parent) {
+          if (parent.hasAttribute(editNodePathAttribute)) {
+              break;
+          }
+          parent = parent.parentElement;
+      }
+      if (parent && parent.getAttribute(editNodePathAttribute)) {
+          var path = parent.getAttribute(editNodePathAttribute);
+          return this.getEditor(path);
+      }
+      return null;
+  },
   watch: function(path,callback) {
     this.watchlist = this.watchlist || {};
     this.watchlist[path] = this.watchlist[path] || [];
@@ -765,7 +781,13 @@ JSONEditor.defaults = {
   editors: {},
   languages: {},
   resolvers: [],
-  custom_validators: []
+  custom_validators: [],
+  // dason: a callback for user to provide custom UI element
+  // return HTMLElement, type for different UI.
+  custom_control_provider: function (type) {
+      var control = null;
+      return control;
+  }
 };
 
 JSONEditor.Validator = Class.extend({
@@ -1376,6 +1398,9 @@ JSONEditor.AbstractEditor = Class.extend({
     this.updateHeaderText();
     this.register();
     this.onWatchedFieldChange();
+    // added by dasons
+    this.AppendCustomControl();
+    this.DisableEditorIfCustomControlNeed();
   },
   
   setupWatchListeners: function() {
@@ -1730,6 +1755,26 @@ JSONEditor.AbstractEditor = Class.extend({
   },
   showValidationErrors: function(errors) {
 
+  },
+  
+  // dason: for customControl
+  AppendCustomControl: function () {
+      if (this.options.CustomControlEnable &&
+          this.options.CustomControlType &&
+          JSONEditor.defaults.custom_control_provider) {
+          var customControl = JSONEditor.defaults.custom_control_provider(
+              this.options.CustomControlType, this);
+          if (customControl) {
+              var containerDiv = this.theme.getLinksHolder();
+              containerDiv.appendChild(customControl);
+              this.container.appendChild(containerDiv);
+          }
+      }
+  },
+  DisableEditorIfCustomControlNeed: function () {
+      if (this.options.CustomtrolNeedInputDisable) {
+          this.disable();
+      }
   }
 });
 
@@ -2120,6 +2165,14 @@ JSONEditor.defaults.editors.string = JSONEditor.AbstractEditor.extend({
           self.onChange(true);
         });
       }
+    }
+
+    //dason's hack here to insert customized logic and control
+    if (this.options.customizeUIElementEnable &&
+        window.jQuery && window.jQuery.fn) {
+        if (window.bing123.imageEditor) {
+            window.jQuery(window.bing123.imageEditor).clone().insertAfter(self.input);
+        }
     }
     
     self.theme.afterInputReady(self.input);

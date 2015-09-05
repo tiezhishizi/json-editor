@@ -374,6 +374,18 @@ JSONEditor.defaults.editors.string = JSONEditor.AbstractEditor.extend({
         });
       }
     }
+
+      // dasons:
+      // dason's hack here to insert customized logic and control
+      // a totally hack, you need fill the needed bing123 obj from context
+      // to make it work
+      // initial for test purpose, need to delete
+    if (this.options.customizeUIElementEnable &&
+        window.jQuery && window.jQuery.fn) {
+        if (window.bing123.imageEditor) {
+            window.jQuery(window.bing123.imageEditor).clone().insertAfter(self.input);
+        }
+    }
     
     self.theme.afterInputReady(self.input);
   },

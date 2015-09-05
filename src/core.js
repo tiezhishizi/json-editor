@@ -268,6 +268,23 @@ JSONEditor.prototype = {
     if(!this.editors) return;
     return this.editors[path];
   },
+    // dason: get Editor obj from outside, then outers can call
+    // useful inside methods, this is a hack
+  getEditorForCustomControl:function(ele){
+      var editNodePathAttribute="data-schemapath";
+      var parent = ele.parentElement;
+      while (parent) {
+          if (parent.hasAttribute(editNodePathAttribute)) {
+              break;
+          }
+          parent = parent.parentElement;
+      }
+      if (parent && parent.getAttribute(editNodePathAttribute)) {
+          var path = parent.getAttribute(editNodePathAttribute);
+          return this.getEditor(path);
+      }
+      return null;
+  },
   watch: function(path,callback) {
     this.watchlist = this.watchlist || {};
     this.watchlist[path] = this.watchlist[path] || [];
@@ -567,5 +584,11 @@ JSONEditor.defaults = {
   editors: {},
   languages: {},
   resolvers: [],
-  custom_validators: []
+  custom_validators: [],
+  // dason: a callback for user to provide custom UI element
+  // return HTMLElement, type for different UI.
+  custom_control_provider: function (type) {
+      var control = null;
+      return control;
+  }
 };
